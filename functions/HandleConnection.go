@@ -4,17 +4,19 @@ import (
 	"fmt"
 	"net"
 	"io"
+	"time"
 )
 
 // type client struct{
 // Name string
 // message string
 // }
-var client []net.Conn
+
 var historique []string
-func HandleConnection(con net.Conn  ){
+var users []string
+func HandleConnection(con net.Conn  ,client []net.Conn){
 	var Name string
-	client = append(client, con)
+	
 	// name := client.Name
 	defer con.Close()
 		msg := `Welcome to TCP-Chat!
@@ -46,20 +48,29 @@ _)      \.___.,|     .'
 		fmt.Print("Server error:",err)
 		return
 		}else{
-		Name = string(buff[:n])
-		Brodcast(Name + "is connected\n" ,con)
+			Name = string(buff[:n])
+			for _,r:= range users{
+				if Name==r{
+					con.Write([]byte("the name is token try other one"))
+					return
+				}else{
+					users = append(users, Name)
+				}
+			}		
+		Brodcast(time.Now(),Name + "is connected\n" ,con ,client)
+		
 	}
 	for{
 		n,err:=con.Read(buff)
 		if err == io.EOF{
-			Brodcast(Name+"is disconnected\n",con)
+			Brodcast(time.Now(),Name+"is disconnected\n",con ,client)
 			return
 		}else if err!= nil{
 			fmt.Print("Error 1:",err)
 			return
 		}
 		
-		Brodcast("["+Name+"]"+":"+string(buff[:n]),con)
+		Brodcast(time.Now(),"["+Name+"]"+":"+string(buff[:n]),con ,client)
 		historique = append(historique, Name,string(buff[:n]))
 		if err == nil{
 			// fmt.Print(historique)
@@ -70,10 +81,11 @@ _)      \.___.,|     .'
 // fmt.Println("------------------")
 }
 
-func Brodcast(message string , sender net.Conn){
+func Brodcast(t time.Time ,message string , sender net.Conn,client []net.Conn){
+	formatted := fmt.Sprintf("[%s] %s", t.Format("15:04:05"), message)
 	for _,c:= range client{
 		if c != sender{
-			_,err:=c.Write([]byte(message,))
+			_,err:=c.Write([]byte(formatted))
 			if err != nil && err != io.EOF{
 				fmt.Println("Error: 2",err)
 				return
