@@ -6,24 +6,23 @@ import (
 	"net"
 )
 
-type client struct{
-Name string
-message string
-}
+// type client struct{
+// Name string
+// message string
+// }
 
 func main(){
-	ln,err:= net.Listen("tcp",":1234")
+	ln,err:= net.Listen("tcp",":8989")
 	if err != nil{
 		fmt.Println("Server Error:",err)
 		return
 	}
-	for{
-		conn,err:= ln.Accept()
+	for {
+		con,err:= ln.Accept()
 		if err != nil{
-			fmt.Println("Error:",err)
+			fmt.Println("Accept Connection Error:",err)
 			return
 		}
-	
-go functions.HandleConnection(conn)
+		go functions.HandleConnection(con)
 	}
 }
