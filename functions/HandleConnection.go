@@ -2,8 +2,8 @@ package functions
 
 import (
 	"fmt"
-	"net"
 	"io"
+	"net"
 	"time"
 )
 
@@ -12,14 +12,12 @@ import (
 // message string
 // }
 
-var historique []string
-var users []string
-func HandleConnection(con net.Conn  ,client []net.Conn){
+// var historique []string
+
+func HandleConnection(con net.Conn) {
 	var Name string
-	
-	// name := client.Name
 	defer con.Close()
-		msg := `Welcome to TCP-Chat!
+	msg := `Welcome to TCP-Chat!
          _nnnn_
         dGGGGMMb
        @p~qp~~qMb
@@ -37,57 +35,61 @@ _)      \.___.,|     .'
 \____   )MMMMMP|   .'
      '-'       '--'
 [ENTER YOUR NAME]: `
-	_, err := con.Write([]byte(msg))
-	buff:= make([]byte,1024)
+
+	buff := make([]byte, 1024)
+	flag:= true
+	for flag {
+
+		_, err := con.Write([]byte(msg))
+	
 	if err != nil {
-		fmt.Println("Writing Error:",err)
+		fmt.Println("Writing Error:", err)
 		return
 	}
-	n,err:=con.Read(buff)
-	 if err!= nil{
-		fmt.Print("Server error:",err)
+	
+	n, err := con.Read(buff)
+	if err != nil {
+		fmt.Print("Server error:", err)
 		return
+	} 
+		Name = string(buff[:n])
+		if !ChekConn(Name){
+			con.Write([]byte("The name is Token Try an other one\n"))
+			continue
 		}else{
-			Name = string(buff[:n])
-			for _,r:= range users{
-				if Name==r{
-					con.Write([]byte("the name is token try other one"))
-					return
-				}else{
-					users = append(users, Name)
-				}
-			}		
-		Brodcast(time.Now(),Name + "is connected\n" ,con ,client)
-		
-	}
-	for{
-		n,err:=con.Read(buff)
-		if err == io.EOF{
-			Brodcast(time.Now(),Name+"is disconnected\n",con ,client)
+			flag= false
+			Clients = append(Clients, Name)
+		}
+		}
+
+		Brodcast(time.Now(), Name+"is connected\n", con, AddClients)
+
+	
+	for {
+		n, err := con.Read(buff)
+		if err == io.EOF {
+			Brodcast(time.Now(), Name+"is disconnected\n", con, AddClients)
 			return
-		}else if err!= nil{
-			fmt.Print("Error 1:",err)
+		} else if err != nil {
+			fmt.Print("Error 1:", err)
 			return
 		}
-		
-		Brodcast(time.Now(),"["+Name+"]"+":"+string(buff[:n]),con ,client)
-		historique = append(historique, Name,string(buff[:n]))
-		if err == nil{
-			// fmt.Print(historique)
-		}
+
+		Brodcast(time.Now(), "["+Name+"]"+":"+string(buff[:n]), con, AddClients)
+		// historique = append(historique, Name, string(buff[:n]))
 	}
 
-// fmt.Println(test)
-// fmt.Println("------------------")
+	// fmt.Println(test)
+	// fmt.Println("------------------")
 }
 
-func Brodcast(t time.Time ,message string , sender net.Conn,client []net.Conn){
-	formatted := fmt.Sprintf("[%s] %s", t.Format("15:04:05"), message)
-	for _,c:= range client{
-		if c != sender{
-			_,err:=c.Write([]byte(formatted))
-			if err != nil && err != io.EOF{
-				fmt.Println("Error: 2",err)
+func Brodcast(t time.Time, message string, sender net.Conn, client []net.Conn) {
+	formatted := t.Format("15:04:05") + message
+	for _, c := range client {
+		if c != sender {
+			_, err := c.Write([]byte(formatted))
+				if err != nil {
+				fmt.Println("Error: 2", err)
 				return
 			}
 		}
