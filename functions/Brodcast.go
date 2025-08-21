@@ -15,9 +15,8 @@ func Brodcast(t time.Time, message string, sender net.Conn, clients *[]net.Conn,
 			_, err := c.Write([]byte(formatted))
 			if err != nil {
 				fmt.Println(n + " Disconnected")
-				// Remove client from list
 				*clients = append((*clients)[:i], (*clients)[i+1:]...)
-				i-- // adjust index after removal
+				i-- 
 				continue
 			}
 		}
