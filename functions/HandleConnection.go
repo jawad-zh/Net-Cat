@@ -12,7 +12,6 @@ import (
 // message string
 // }
 
-// var historique []string
 
 func HandleConnection(con net.Conn) {
 	var Name string
@@ -63,7 +62,7 @@ _)      \.___.,|     .'
 		}
 	}
 
-	Brodcast(time.Now(), "["+Name+"]"+"is connected\n", con, AddClients, Name)
+	Brodcast(time.Now(), "["+Name+"]"+"is connected\n", con, &AddClients, Name)
 	if len(historique)!=0{
 		for _,r:= range historique{
 			_,err:=con.Write([]byte(r))
@@ -82,16 +81,16 @@ _)      \.___.,|     .'
 		// }
 		n, err := con.Read(buff)
 		if err == io.EOF {
-			Brodcast(time.Now(), Name+"is disconnected\n", con, AddClients, Name)
+			Clients = Remov(Clients,Name)
+			Brodcast(time.Now(), Name+"is disconnected\n", con, &AddClients, Name)
 			return
 		} else if err != nil {
 			fmt.Print("Error 1:", err)
 			return
 		}
 		format := "[" + Name + "]" + ":" + string(buff[:n])
-		Historique(format)
+		Historique(time.Now() ,format)
 
-		Brodcast(time.Now(), "["+Name+"]"+":"+string(buff[:n]), con, AddClients, Name)
-		// historique = append(historique, Name, string(buff[:n]))
+		Brodcast(time.Now(), "["+Name+"]"+":"+string(buff[:n]), con, &AddClients, Name)
 	}
 }
